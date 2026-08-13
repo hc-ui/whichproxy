@@ -68,6 +68,7 @@ def test_host_api_openai_direct_exits_1(
     text = _combined(capsys)
     assert code == 1
     assert "DIRECT" in text
+    assert "consensus=" in text
     assert "api.openai.com" in text.lower()
 
 

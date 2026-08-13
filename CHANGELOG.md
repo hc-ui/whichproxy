@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 — 2026-08-13
+
+- Host output prints `consensus=`
+- UTF-8 stdout also covers gb2312 / mbcs / cp1252
+
 ## 0.1.0 — 2026-08-13
 
 First release.

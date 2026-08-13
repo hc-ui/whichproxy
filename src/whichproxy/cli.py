@@ -90,7 +90,7 @@ def _cmd_hosts(hosts: list[str], env: ProxyEnv, json_mode: bool) -> int:
         for index, entry in enumerate(entries):
             if index:
                 print()
-            _print_host_text(entry["host"], env, entry["models"])
+            _print_host_text(entry["host"], env, entry["models"], entry["consensus"])
     return 1 if failed else 0
 
 
@@ -119,8 +119,10 @@ def _print_doctor_text(report: dict) -> None:
             print(f"  {tip}")
 
 
-def _print_host_text(host: str, env: ProxyEnv, models: list[dict]) -> None:
+def _print_host_text(host: str, env: ProxyEnv, models: list[dict], consensus: str | None = None) -> None:
     print(host)
+    if consensus:
+        print(f"  consensus={consensus}")
     print(f"  HTTP_PROXY={redact_proxy(env.http_proxy or env.https_proxy or env.all_proxy)}")
     print(f"  NO_PROXY={env.no_proxy}")
     for item in models:
@@ -143,7 +145,7 @@ def _print_json(payload: object) -> None:
 def _ensure_utf8_stdout() -> None:
     for stream in (sys.stdout, sys.stderr):
         encoding = (getattr(stream, "encoding", None) or "").lower()
-        if encoding not in {"cp936", "gbk"}:
+        if encoding.replace("-", "") not in {"cp936", "gbk", "gb2312", "mbcs", "cp1252"}:
             continue
         reconfigure = getattr(stream, "reconfigure", None)
         if reconfigure is None:
