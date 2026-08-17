@@ -29,7 +29,7 @@ Python 3.10+，零依赖。尚未上 PyPI：
 pip install git+https://github.com/hc-ui/whichproxy.git
 ```
 
-装好后在当前终端跑 `whichproxy doctor`。
+装好后在当前终端跑 `whichproxy doctor`（或 `whichproxy clinic`）。输出中文诊断和可复制的修复命令，**不会改环境变量**。
 
 ## 20 秒上手
 

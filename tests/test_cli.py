@@ -97,3 +97,17 @@ def test_suggest_prints_safe_noproxy(
     assert code == 0
     assert "localhost,127.0.0.1,::1" in text
     assert "Does not write" in text
+    assert "不会改" in text
+
+
+def test_clinic_alias_prints_chinese_diagnosis(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    _set_clash_env(monkeypatch)
+    code = main(["clinic"])
+    text = _combined(capsys)
+    assert code == 1
+    assert "诊所" in text
+    assert "openai" in text.lower()
+    assert "PowerShell" in text

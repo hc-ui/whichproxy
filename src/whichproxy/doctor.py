@@ -8,6 +8,7 @@ from .env import (
     redact_proxy,
     suggest_fix,
 )
+from .clinic import clinic_findings
 from .probe import probe_local_proxy
 from .match import ModelResult, consensus, evaluate
 
@@ -75,7 +76,7 @@ def doctor_report(
             f"Proxy {reach.get('target')} is not accepting connections. "
             "Is Clash (or your mixed-port) running?"
         )
-    return {
+    payload = {
         "env": {
             "http_proxy": redact_proxy(env.http_proxy),
             "https_proxy": redact_proxy(env.https_proxy),
@@ -100,6 +101,8 @@ def doctor_report(
         "proxy": reach,
         "tips": tips,
     }
+    payload["findings"] = clinic_findings(payload)
+    return payload
 
 
 def _host_entry(host: str, env: ProxyEnv) -> dict:

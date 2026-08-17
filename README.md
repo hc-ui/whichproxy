@@ -29,7 +29,7 @@ Python 3.10+, zero dependencies. Not on PyPI yet:
 pip install git+https://github.com/hc-ui/whichproxy.git
 ```
 
-Then run `whichproxy doctor` against your current shell.
+Then run `whichproxy doctor` (or `clinic`). It prints a Chinese diagnosis plus copy-pasteable fix commands. It does not write environment variables.
 
 ## 20 seconds
 

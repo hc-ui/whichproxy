@@ -5,6 +5,7 @@ import json
 import sys
 
 from . import __version__
+from .clinic import render_clinic
 from .doctor import _host_entry, doctor_report
 from .env import ProxyEnv, read_env, redact_proxy, suggest_fix
 
@@ -15,7 +16,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     env = read_env()
     tokens: list[str] = args.targets
-    if not tokens or tokens[0] == "doctor":
+    if not tokens or tokens[0] in {"doctor", "clinic"}:
         return _cmd_doctor(env, json_mode=args.json)
     if tokens[0] == "env":
         return _cmd_env(env, json_mode=args.json)
@@ -35,8 +36,9 @@ def _build_parser() -> argparse.ArgumentParser:
             "commands:\n"
             "  whichproxy HOST [HOST...]  route for each host\n"
             "  whichproxy env             print proxy-related environment variables\n"
-            "  whichproxy doctor          check well-known AI hosts (default)\n"
-            "  whichproxy suggest         print a safe NO_PROXY (does not write env)\n"
+            "  whichproxy doctor          中文诊所（默认）\n"
+            "  whichproxy clinic          同 doctor\n"
+            "  whichproxy suggest         打印安全 NO_PROXY（不改环境变量）\n"
         ),
     )
     parser.add_argument(
@@ -75,7 +77,8 @@ def _cmd_doctor(env: ProxyEnv, json_mode: bool) -> int:
     if json_mode:
         _print_json(report)
     else:
-        _print_doctor_text(report)
+        print(render_clinic(report), end="")
+        _print_doctor_hosts(report)
     proxy = report.get("proxy") or {}
     proxy_down = bool(proxy.get("checked") and proxy.get("ok") is False)
     failed = bool(report["dangerous"] or report.get("user_dangerous") or proxy_down)
@@ -94,13 +97,14 @@ def _cmd_suggest(env: ProxyEnv, json_mode: bool) -> int:
         if remove:
             print("remove from NO_PROXY: " + ", ".join(str(item) for item in remove))
         print()
-        print("this shell:")
+        print("本窗口 PowerShell：")
         print(f"  {payload['powershell']}")
+        print("本窗口 bash：")
         print(f"  {payload['bash']}")
-        print("user-level (new terminals):")
+        print("用户级（新终端生效）：")
         print(f"  {payload['user_powershell']}")
         print()
-        print("Does not write any environment variable.")
+        print("不会改任何环境变量。Does not write any environment variable.")
     return 0
 
 
@@ -122,50 +126,13 @@ def _cmd_hosts(hosts: list[str], env: ProxyEnv, json_mode: bool) -> int:
     return 1 if failed else 0
 
 
-def _print_doctor_text(report: dict) -> None:
-    env = report["env"]
-    print(f"HTTP_PROXY={env['http_proxy']}")
-    print(f"HTTPS_PROXY={env['https_proxy']}")
-    print(f"ALL_PROXY={env['all_proxy']}")
-    print(f"NO_PROXY={env['no_proxy']}")
+def _print_doctor_hosts(report: dict) -> None:
     print()
-    dangerous = report["dangerous"]
-    if dangerous:
-        print("dangerous: " + ", ".join(dangerous))
-    else:
-        print("dangerous: (none)")
-    proxy = report.get("proxy") or {}
-    if proxy.get("target"):
-        if proxy.get("ok") is True:
-            print(f"proxy {proxy['target']}: listening")
-        elif proxy.get("checked") and proxy.get("ok") is False:
-            print(f"proxy {proxy['target']}: not listening")
-    print()
+    print("主机路由：")
     for entry in report["hosts"]:
         print(f"{entry['host']}  {entry['consensus']}")
         for item in entry["models"]:
             print(f"  {item['model']:<8}{item['route']}  ({item['reason']})")
-        print()
-    user_env = report.get("user_env")
-    if user_env is not None:
-        print()
-        print("user-level (new terminals):")
-        print(f"  NO_PROXY={user_env['no_proxy']}")
-        user_dangerous = report.get("user_dangerous") or []
-        if user_dangerous:
-            print("  dangerous: " + ", ".join(user_dangerous))
-        if report.get("user_drift"):
-            print("  differs from this process")
-    suggest = report.get("suggest") or {}
-    if suggest.get("no_proxy"):
-        print()
-        print(f"suggest NO_PROXY={suggest['no_proxy']}")
-        print(f"  {suggest.get('powershell', '')}")
-    tips = report["tips"]
-    if tips:
-        print("tips:")
-        for tip in tips:
-            print(f"  {tip}")
 
 
 def _print_host_text(host: str, env: ProxyEnv, models: list[dict], consensus: str | None = None) -> None:

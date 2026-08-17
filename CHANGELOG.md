@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 — 2026-08-17
+
+- `doctor` / `clinic` 输出中文诊所：问题、原因、可复制的 PowerShell/bash（不改环境变量）
+- JSON 增加 `findings`
+
 ## 0.2.2 — 2026-08-17
 
 - `doctor` TCP-probes loopback proxies (127.0.0.1 / localhost). No outbound request.
