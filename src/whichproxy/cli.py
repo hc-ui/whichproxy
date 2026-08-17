@@ -76,7 +76,9 @@ def _cmd_doctor(env: ProxyEnv, json_mode: bool) -> int:
         _print_json(report)
     else:
         _print_doctor_text(report)
-    failed = bool(report["dangerous"] or report.get("user_dangerous"))
+    proxy = report.get("proxy") or {}
+    proxy_down = bool(proxy.get("checked") and proxy.get("ok") is False)
+    failed = bool(report["dangerous"] or report.get("user_dangerous") or proxy_down)
     return 1 if failed else 0
 
 
@@ -132,6 +134,12 @@ def _print_doctor_text(report: dict) -> None:
         print("dangerous: " + ", ".join(dangerous))
     else:
         print("dangerous: (none)")
+    proxy = report.get("proxy") or {}
+    if proxy.get("target"):
+        if proxy.get("ok") is True:
+            print(f"proxy {proxy['target']}: listening")
+        elif proxy.get("checked") and proxy.get("ok") is False:
+            print(f"proxy {proxy['target']}: not listening")
     print()
     for entry in report["hosts"]:
         print(f"{entry['host']}  {entry['consensus']}")

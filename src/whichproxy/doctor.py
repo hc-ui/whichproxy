@@ -8,6 +8,7 @@ from .env import (
     redact_proxy,
     suggest_fix,
 )
+from .probe import probe_local_proxy
 from .match import ModelResult, consensus, evaluate
 
 PRESETS = [
@@ -38,9 +39,12 @@ def doctor_report(
     env: ProxyEnv,
     *,
     user_env: ProxyEnv | None = None,
+    probe=None,
 ) -> dict:
     if user_env is None:
         user_env = read_user_env()
+    if probe is None:
+        probe = probe_local_proxy
     dangerous = dangerous_no_proxy_hits(env.no_proxy)
     user_dangerous = (
         dangerous_no_proxy_hits(user_env.no_proxy) if user_env is not None else []
@@ -65,6 +69,12 @@ def doctor_report(
     if user_drift:
         tips.append(_USER_DRIFT_TIP)
     tips.append(f"Keep NO_PROXY local only: {SAFE_NO_PROXY}")
+    reach = probe(env.effective_https)
+    if reach.get("checked") and reach.get("ok") is False:
+        tips.append(
+            f"Proxy {reach.get('target')} is not accepting connections. "
+            "Is Clash (or your mixed-port) running?"
+        )
     return {
         "env": {
             "http_proxy": redact_proxy(env.http_proxy),
@@ -87,6 +97,7 @@ def doctor_report(
         "user_dangerous": user_dangerous,
         "hosts": hosts,
         "suggest": suggest_fix(env),
+        "proxy": reach,
         "tips": tips,
     }
 

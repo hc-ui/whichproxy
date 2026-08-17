@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 — 2026-08-17
+
+- `doctor` TCP-probes loopback proxies (127.0.0.1 / localhost). No outbound request.
+
 ## 0.2.1 — 2026-08-17
 
 - `doctor` warns if only `HTTP_PROXY` or only `HTTPS_PROXY` is set

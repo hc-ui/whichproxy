@@ -99,3 +99,21 @@ def test_doctor_warns_when_only_http_proxy_set() -> None:
     report = doctor_report(env, user_env=env)
     joined = " ".join(report["tips"])
     assert "HTTPS_PROXY is empty" in joined
+
+
+def test_doctor_reports_dead_loopback_proxy() -> None:
+    from whichproxy.doctor import doctor_report
+
+    env = read_env({"HTTPS_PROXY": PROXY_URL, "NO_PROXY": "localhost"})
+
+    def fake_probe(url: str) -> dict:
+        return {
+            "checked": True,
+            "ok": False,
+            "target": "127.0.0.1:7897",
+            "error": "refused",
+        }
+
+    report = doctor_report(env, user_env=env, probe=fake_probe)
+    assert report["proxy"]["ok"] is False
+    assert any("not accepting connections" in tip for tip in report["tips"])
