@@ -111,3 +111,4 @@ def test_clinic_alias_prints_chinese_diagnosis(
     assert "诊所" in text
     assert "openai" in text.lower()
     assert "PowerShell" in text
+    assert "不一致" in text or "DISAGREE" in text

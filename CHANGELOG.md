@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 — 2026-08-17
+
+- 诊所标出 DISAGREE / 直连的主机
+- `suggest` 同时给出 HTTP_PROXY / HTTPS_PROXY / ALL_PROXY 三连
+
 ## 0.3.0 — 2026-08-17
 
 - `doctor` / `clinic` 输出中文诊所：问题、原因、可复制的 PowerShell/bash（不改环境变量）

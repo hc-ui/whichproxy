@@ -73,6 +73,7 @@ def test_suggest_fix_does_not_write_and_keeps_local_only() -> None:
     assert payload["no_proxy"] == SAFE_NO_PROXY
     assert "openai.com" in payload["remove"]
     assert "openai.com" not in str(payload["no_proxy"])
+    assert "ALL_PROXY" in str(payload["powershell_proxy"])
 
 
 def test_read_user_env_accepts_injected_mapping() -> None:

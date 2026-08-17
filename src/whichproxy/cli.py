@@ -99,8 +99,12 @@ def _cmd_suggest(env: ProxyEnv, json_mode: bool) -> int:
         print()
         print("本窗口 PowerShell：")
         print(f"  {payload['powershell']}")
+        if payload.get("powershell_proxy"):
+            print(f"  {payload['powershell_proxy']}")
         print("本窗口 bash：")
         print(f"  {payload['bash']}")
+        if payload.get("bash_proxy"):
+            print(f"  {payload['bash_proxy']}")
         print("用户级（新终端生效）：")
         print(f"  {payload['user_powershell']}")
         print()

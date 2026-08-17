@@ -134,12 +134,22 @@ def read_win_user_environ() -> dict[str, str] | None:
 def suggest_fix(env: ProxyEnv) -> dict[str, object]:
     dangerous = dangerous_no_proxy_hits(env.no_proxy)
     proxy = env.effective_https
+    proxy_url = redact_proxy(proxy) or "http://127.0.0.1:7897"
     return {
         "no_proxy": SAFE_NO_PROXY,
         "https_proxy": redact_proxy(proxy),
         "remove": dangerous,
         "powershell": f'$env:NO_PROXY = "{SAFE_NO_PROXY}"',
+        "powershell_proxy": (
+            f'$env:HTTP_PROXY = "{proxy_url}"; '
+            f'$env:HTTPS_PROXY = "{proxy_url}"; '
+            f'$env:ALL_PROXY = "{proxy_url}"'
+        ),
         "bash": f"export NO_PROXY={SAFE_NO_PROXY}",
+        "bash_proxy": (
+            f"export HTTP_PROXY={proxy_url} "
+            f"HTTPS_PROXY={proxy_url} ALL_PROXY={proxy_url}"
+        ),
         "user_powershell": (
             '[Environment]::SetEnvironmentVariable('
             f'"NO_PROXY","{SAFE_NO_PROXY}","User")'

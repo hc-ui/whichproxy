@@ -74,6 +74,39 @@ def clinic_findings(report: dict) -> list[dict]:
                 suggest=suggest,
             )
         )
+    disagree = [
+        str(entry.get("host") or "")
+        for entry in (report.get("hosts") or [])
+        if entry.get("consensus") == "DISAGREE"
+    ]
+    direct = [
+        str(entry.get("host") or "")
+        for entry in (report.get("hosts") or [])
+        if entry.get("consensus") == "DIRECT"
+        and (env.get("https_proxy") or env.get("http_proxy") or env.get("all_proxy"))
+    ]
+    if disagree:
+        findings.append(
+            _finding(
+                "HOST_DISAGREE",
+                "error",
+                "curl / Python / Go 对同一主机走法不一致",
+                "典型就是 NO_PROXY 写了 openai.com：curl 仍走代理，Python 和 Go 直连。",
+                extra="、".join(disagree),
+                suggest=suggest,
+            )
+        )
+    elif direct:
+        findings.append(
+            _finding(
+                "HOST_DIRECT",
+                "warn",
+                "已设代理，但这些 AI 主机仍判定为直连",
+                "检查 NO_PROXY 是否把它们放行了。",
+                extra="、".join(direct),
+                suggest=suggest,
+            )
+        )
     proxy = report.get("proxy") or {}
     if proxy.get("checked") and proxy.get("ok") is False:
         findings.append(
@@ -152,10 +185,15 @@ def _finding(
         if payload.get("bash"):
             commands.append("本窗口 bash：")
             commands.append(str(payload["bash"]))
-        if payload.get("https_proxy") and code == "NO_PROXY_SERVER":
-            commands.append("若 Clash mixed-port 是 7897：")
-            commands.append('$env:HTTPS_PROXY = "http://127.0.0.1:7897"')
-            commands.append('$env:HTTP_PROXY = "http://127.0.0.1:7897"')
+        if payload.get("powershell_proxy") and code in {
+            "NO_PROXY_SERVER",
+            "HTTPS_MISSING",
+            "HTTP_MISSING",
+        }:
+            commands.append("本窗口同时设三个代理变量：")
+            commands.append(str(payload["powershell_proxy"]))
+            if payload.get("bash_proxy"):
+                commands.append(str(payload["bash_proxy"]))
     return {
         "code": code,
         "level": level,
