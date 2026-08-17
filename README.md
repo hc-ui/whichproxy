@@ -1,16 +1,12 @@
 # whichproxy
 
-See if a host uses your HTTP(S) proxy or slips through `NO_PROXY`.
+Browser uses Clash. Codex / Claude still get `403 country not supported`.
+
+Nine times out of ten, `NO_PROXY` contains `openai.com`. curl still goes through the proxy; Python and Go go **direct**. `whichproxy` prints that disagreement. It never sends a request.
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-## Why
-
-On **Windows + Clash**, Codex / Claude / similar CLIs fail in a confusing way: the **browser** reaches OpenAI through the proxy, the **CLI** gets `403` *country, region, or territory not supported*.
-
-The usual cause is `NO_PROXY` containing `openai.com` or `chatgpt.com`. The browser still goes through Clash; the CLI bypasses it and exits from your real region. Runtimes also **disagree** on what those tokens mean (`.openai.com` vs `openai.com`).
-
-`whichproxy` prints the route **curl**, **Python**, and **Go** would each take. It does not send any requests.
+![whichproxy output: curl PROXY, python DIRECT, go DIRECT, marked DISAGREE](assets/disagree.svg)
 
 ## Warning
 
@@ -27,13 +23,13 @@ The usual cause is `NO_PROXY` containing `openai.com` or `chatgpt.com`. The brow
 
 ## Install
 
-Requires **Python 3.10+**. The package name is **`whichproxy`**. It is not published on PyPI yet — install from a clone:
+Python 3.10+, zero dependencies. Not on PyPI yet:
 
 ```bash
-pip install -e .
+pip install git+https://github.com/hc-ui/whichproxy.git
 ```
 
-That installs the `whichproxy` command.
+Then run `whichproxy doctor` against your current shell.
 
 ## 20 seconds
 

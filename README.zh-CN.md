@@ -1,16 +1,12 @@
 # whichproxy
 
-看一个主机是走你的 HTTP(S) 代理，还是被 `NO_PROXY` 放行直连。
+浏览器走了 Clash，Codex / Claude 还是 `403 country not supported`。
+
+十有八九是 `NO_PROXY` 里写了 `openai.com`。curl 仍走代理，Python 和 Go **直连**。`whichproxy` 把这种不一致打出来。它自己不发任何请求。
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-## 为什么要有这个工具
-
-**Windows + Clash** 上，Codex / Claude 一类 CLI 经常踩同一个坑： **浏览器** 能走代理登录，**CLI** 却 `403` *country, region, or territory not supported*。
-
-常见原因是 `NO_PROXY` 里写了 `openai.com` 或 `chatgpt.com`。浏览器仍走 Clash，CLI 换 token 时直连国内出口。不同运行时对 `NO_PROXY` 的匹配还不一致（`.openai.com` 和 `openai.com` 含义不同）。
-
-`whichproxy` 打印 **curl**、**Python**、**Go** 各自会走的路由。它自己不发任何请求。
+![whichproxy 输出：curl 走代理，Python/Go 直连，标记 DISAGREE](assets/disagree.svg)
 
 ## 警告
 
@@ -27,13 +23,13 @@
 
 ## 安装
 
-需要 **Python 3.10+**。包名是 **`whichproxy`**。尚未发布到 PyPI，请从克隆下来的源码安装：
+Python 3.10+，零依赖。尚未上 PyPI：
 
 ```bash
-pip install -e .
+pip install git+https://github.com/hc-ui/whichproxy.git
 ```
 
-安装后即可使用 `whichproxy` 命令。
+装好后在当前终端跑 `whichproxy doctor`。
 
 ## 20 秒上手
 

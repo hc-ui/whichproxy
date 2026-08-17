@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="248" viewBox="0 0 880 248" role="img" aria-label="whichproxy marks api.openai.com as DISAGREE: curl uses the proxy, Python and Go go direct">
+  <rect width="880" height="248" rx="12" fill="#0d1117"/>
+  <text x="28" y="40" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18" fill="#8b949e">$ whichproxy api.openai.com</text>
+  <text x="28" y="76" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18" fill="#e6edf3">api.openai.com</text>
+  <text x="48" y="108" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="16" fill="#8b949e">NO_PROXY=localhost,127.0.0.1,openai.com</text>
+  <text x="48" y="140" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="16" fill="#3fb950">curl     PROXY    via 127.0.0.1:7897</text>
+  <text x="48" y="168" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="16" fill="#f85149">python   DIRECT   urllib treats openai.com as suffix</text>
+  <text x="48" y="196" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="16" fill="#f85149">go       DIRECT   same suffix rule</text>
+  <text x="48" y="228" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="16" font-weight="700" fill="#d29922">DISAGREE</text>
+</svg>
