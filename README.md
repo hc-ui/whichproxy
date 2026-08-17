@@ -69,6 +69,7 @@ curl only exact-matches a bare token; Python and Go treat `openai.com` as a suff
 | `whichproxy HOST [HOST...]` | Route each host would take under curl / python / go |
 | `whichproxy env` | Print proxy-related environment variables |
 | `whichproxy doctor` | Check well-known AI hosts and warn about dangerous `NO_PROXY` entries |
+| `whichproxy suggest` | Print a safe `NO_PROXY` (does not write env) |
 | `whichproxy --json` | Same results, machine-readable |
 
 `env` / `doctor` read `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, and `NO_PROXY` (plus lowercase aliases).

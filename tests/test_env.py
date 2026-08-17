@@ -2,7 +2,15 @@ from __future__ import annotations
 
 import pytest
 
-from whichproxy.env import dangerous_no_proxy_hits, read_env, redact_proxy
+from whichproxy.env import (
+    SAFE_NO_PROXY,
+    ProxyEnv,
+    dangerous_no_proxy_hits,
+    read_env,
+    read_user_env,
+    redact_proxy,
+    suggest_fix,
+)
 
 PROXY_URL = "http://127.0.0.1:7897"
 AUTH_PROXY_URL = "http://user:s3cretPASS@127.0.0.1:7897"
@@ -50,3 +58,35 @@ def test_dangerous_no_proxy_hits_finds_related_tokens() -> None:
 
 def test_dangerous_no_proxy_hits_ignores_unrelated() -> None:
     assert dangerous_no_proxy_hits("localhost,127.0.0.1,.local") == []
+
+
+def test_dangerous_no_proxy_hits_finds_xai_and_anthropic() -> None:
+    hits = dangerous_no_proxy_hits("localhost,x.ai,api.anthropic.com,cursor.com")
+    assert "x.ai" in hits
+    assert "api.anthropic.com" in hits
+    assert "cursor.com" in hits
+
+
+def test_suggest_fix_does_not_write_and_keeps_local_only() -> None:
+    env = read_env({"HTTPS_PROXY": PROXY_URL, "NO_PROXY": "localhost,openai.com"})
+    payload = suggest_fix(env)
+    assert payload["no_proxy"] == SAFE_NO_PROXY
+    assert "openai.com" in payload["remove"]
+    assert "openai.com" not in str(payload["no_proxy"])
+
+
+def test_read_user_env_accepts_injected_mapping() -> None:
+    env = read_user_env({"NO_PROXY": "openai.com", "HTTPS_PROXY": PROXY_URL})
+    assert env is not None
+    assert env.no_proxy == "openai.com"
+
+
+def test_doctor_report_flags_user_drift() -> None:
+    from whichproxy.doctor import doctor_report
+
+    process = read_env({"HTTPS_PROXY": PROXY_URL, "NO_PROXY": "localhost"})
+    user = ProxyEnv("", PROXY_URL, "", "localhost,openai.com")
+    report = doctor_report(process, user_env=user)
+    assert report["user_drift"] is True
+    assert "openai.com" in report["user_dangerous"]
+    assert report["suggest"]["no_proxy"] == SAFE_NO_PROXY

@@ -6,7 +6,7 @@ import sys
 
 from . import __version__
 from .doctor import _host_entry, doctor_report
-from .env import ProxyEnv, read_env, redact_proxy
+from .env import ProxyEnv, read_env, redact_proxy, suggest_fix
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -19,6 +19,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_doctor(env, json_mode=args.json)
     if tokens[0] == "env":
         return _cmd_env(env, json_mode=args.json)
+    if tokens[0] == "suggest":
+        return _cmd_suggest(env, json_mode=args.json)
     return _cmd_hosts(tokens, env, json_mode=args.json)
 
 
@@ -34,6 +36,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "  whichproxy HOST [HOST...]  route for each host\n"
             "  whichproxy env             print proxy-related environment variables\n"
             "  whichproxy doctor          check well-known AI hosts (default)\n"
+            "  whichproxy suggest         print a safe NO_PROXY (does not write env)\n"
         ),
     )
     parser.add_argument(
@@ -50,7 +53,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "targets",
         nargs="*",
         metavar="HOST",
-        help="hosts to check, or 'env' / 'doctor'",
+        help="hosts to check, or 'env' / 'doctor' / 'suggest'",
     )
     return parser
 
@@ -73,7 +76,30 @@ def _cmd_doctor(env: ProxyEnv, json_mode: bool) -> int:
         _print_json(report)
     else:
         _print_doctor_text(report)
-    return 1 if report["dangerous"] else 0
+    failed = bool(report["dangerous"] or report.get("user_dangerous"))
+    return 1 if failed else 0
+
+
+def _cmd_suggest(env: ProxyEnv, json_mode: bool) -> int:
+    payload = suggest_fix(env)
+    if json_mode:
+        _print_json(payload)
+    else:
+        print(f"NO_PROXY={payload['no_proxy']}")
+        if payload["https_proxy"]:
+            print(f"HTTPS_PROXY={payload['https_proxy']}")
+        remove = payload["remove"]
+        if remove:
+            print("remove from NO_PROXY: " + ", ".join(str(item) for item in remove))
+        print()
+        print("this shell:")
+        print(f"  {payload['powershell']}")
+        print(f"  {payload['bash']}")
+        print("user-level (new terminals):")
+        print(f"  {payload['user_powershell']}")
+        print()
+        print("Does not write any environment variable.")
+    return 0
 
 
 def _cmd_hosts(hosts: list[str], env: ProxyEnv, json_mode: bool) -> int:
@@ -112,6 +138,21 @@ def _print_doctor_text(report: dict) -> None:
         for item in entry["models"]:
             print(f"  {item['model']:<8}{item['route']}  ({item['reason']})")
         print()
+    user_env = report.get("user_env")
+    if user_env is not None:
+        print()
+        print("user-level (new terminals):")
+        print(f"  NO_PROXY={user_env['no_proxy']}")
+        user_dangerous = report.get("user_dangerous") or []
+        if user_dangerous:
+            print("  dangerous: " + ", ".join(user_dangerous))
+        if report.get("user_drift"):
+            print("  differs from this process")
+    suggest = report.get("suggest") or {}
+    if suggest.get("no_proxy"):
+        print()
+        print(f"suggest NO_PROXY={suggest['no_proxy']}")
+        print(f"  {suggest.get('powershell', '')}")
     tips = report["tips"]
     if tips:
         print("tips:")

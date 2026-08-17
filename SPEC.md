@@ -16,6 +16,7 @@ Local only. No API keys. Live network checks are optional.
 - `whichproxy HOST [HOST...]` — route for each host
 - `whichproxy env` — print proxy-related environment variables
 - `whichproxy doctor` — check well-known AI hosts + warn about dangerous NO_PROXY entries
+- `whichproxy suggest` — print a safe NO_PROXY; does not write env
 - `whichproxy --json` — machine-readable output
 
 ## Matching models
@@ -35,7 +36,9 @@ If models disagree, mark the host `DISAGREE` and explain.
 
 Warn if `NO_PROXY` contains any of:
 `openai.com`, `.openai.com`, `api.openai.com`, `chatgpt.com`, `.chatgpt.com`,
-`auth.openai.com`
+`auth.openai.com`, `x.ai`, `api.x.ai`, `auth.x.ai`, `anthropic.com`,
+`api.anthropic.com`, `claude.ai`, `generativelanguage.googleapis.com`,
+`cursor.com`, `cursor.sh`, `api2.cursor.sh`
 
 These make Codex/ChatGPT token exchange bypass Clash.
 

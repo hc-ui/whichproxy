@@ -85,3 +85,15 @@ def test_env_json_contains_redacted_fields(
     assert "s3cretPASS" not in text
     assert "s3cretPASS" not in dumped
     assert "***" in dumped
+
+
+def test_suggest_prints_safe_noproxy(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    _set_clash_env(monkeypatch)
+    code = main(["suggest"])
+    text = _combined(capsys)
+    assert code == 0
+    assert "localhost,127.0.0.1,::1" in text
+    assert "Does not write" in text

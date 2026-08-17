@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 — 2026-08-17
+
+- `whichproxy suggest` prints a safe `NO_PROXY` and shell snippets; it does **not** write env
+- `doctor` also checks User-level env on Windows and warns if it differs from this process
+- Dangerous hosts now include x.ai, Anthropic, Gemini, and Cursor — not only OpenAI
+- Suggested fix is local-only: `localhost,127.0.0.1,::1,.local`
+
 ## 0.1.1 — 2026-08-13
 
 - Host output prints `consensus=`

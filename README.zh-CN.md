@@ -69,6 +69,7 @@ curl 对无前导点的 token 只做精确匹配；Python 和 Go 把 `openai.com
 | `whichproxy HOST [HOST...]` | 按 curl / python / go 打印每个主机的路由 |
 | `whichproxy env` | 打印与代理相关的环境变量 |
 | `whichproxy doctor` | 检查常见 AI 主机，并对危险的 `NO_PROXY` 项告警 |
+| `whichproxy suggest` | 打印一份安全的 `NO_PROXY`（不改环境变量） |
 | `whichproxy --json` | 同样的结果，机器可读输出 |
 
 `env` / `doctor` 会读取 `HTTP_PROXY`、`HTTPS_PROXY`、`ALL_PROXY`、`NO_PROXY`（以及小写别名）。

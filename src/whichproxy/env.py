@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass
 from urllib.parse import urlsplit, urlunsplit
 
@@ -12,7 +13,21 @@ DANGEROUS_NOPROXY = (
     "auth.openai.com",
     "chatgpt.com",
     ".chatgpt.com",
+    "x.ai",
+    ".x.ai",
+    "api.x.ai",
+    "auth.x.ai",
+    "grok.x.ai",
+    "anthropic.com",
+    "api.anthropic.com",
+    "claude.ai",
+    "generativelanguage.googleapis.com",
+    "cursor.com",
+    "cursor.sh",
+    "api2.cursor.sh",
 )
+
+SAFE_NO_PROXY = "localhost,127.0.0.1,::1,.local"
 
 
 @dataclass(frozen=True)
@@ -77,6 +92,59 @@ def redact_proxy(url: str) -> str:
     auth = f"{user}:***" if user or parts.password else ""
     netloc = f"{auth}@{host}" if auth else host
     return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+
+
+def read_user_env(values: dict[str, str] | None = None) -> ProxyEnv | None:
+    """User-level env on Windows (HKCU\\Environment). None if unavailable."""
+    if values is not None:
+        return read_env(values)
+    raw = read_win_user_environ()
+    if raw is None:
+        return None
+    return read_env(raw)
+
+
+def read_win_user_environ() -> dict[str, str] | None:
+    if sys.platform != "win32":
+        return None
+    try:
+        import winreg
+    except ImportError:
+        return None
+    try:
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment")
+    except OSError:
+        return None
+    values: dict[str, str] = {}
+    try:
+        index = 0
+        while True:
+            try:
+                name, data, _typ = winreg.EnumValue(key, index)
+            except OSError:
+                break
+            if name and isinstance(data, str):
+                values[str(name)] = data
+            index += 1
+    finally:
+        key.Close()
+    return values
+
+
+def suggest_fix(env: ProxyEnv) -> dict[str, object]:
+    dangerous = dangerous_no_proxy_hits(env.no_proxy)
+    proxy = env.effective_https
+    return {
+        "no_proxy": SAFE_NO_PROXY,
+        "https_proxy": redact_proxy(proxy),
+        "remove": dangerous,
+        "powershell": f'$env:NO_PROXY = "{SAFE_NO_PROXY}"',
+        "bash": f"export NO_PROXY={SAFE_NO_PROXY}",
+        "user_powershell": (
+            '[Environment]::SetEnvironmentVariable('
+            f'"NO_PROXY","{SAFE_NO_PROXY}","User")'
+        ),
+    }
 
 
 def dangerous_no_proxy_hits(no_proxy: str) -> list[str]:
