@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "whichproxy"
-version = "0.2.0"
+version = "0.2.1"
 description = "See whether a host uses your proxy or slips through NO_PROXY — built for AI CLIs on Clash."
 readme = "README.md"
 license = { text = "MIT" }

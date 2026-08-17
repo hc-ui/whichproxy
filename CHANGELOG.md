@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 — 2026-08-17
+
+- `doctor` warns if only `HTTP_PROXY` or only `HTTPS_PROXY` is set
+
 ## 0.2.0 — 2026-08-17
 
 - `whichproxy suggest` prints a safe `NO_PROXY` and shell snippets; it does **not** write env

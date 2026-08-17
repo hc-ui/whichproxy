@@ -51,6 +51,16 @@ def doctor_report(
         tips.append(_CLASH_CODEX_TIP)
     if not env.effective_https:
         tips.append(_NO_PROXY_TIP)
+    elif env.http_proxy and not env.https_proxy and not env.all_proxy:
+        tips.append(
+            "HTTP_PROXY is set but HTTPS_PROXY is empty. "
+            "HTTPS (most AI CLIs) may skip the proxy."
+        )
+    elif env.https_proxy and not env.http_proxy and not env.all_proxy:
+        tips.append(
+            "HTTPS_PROXY is set but HTTP_PROXY is empty. "
+            "Plain HTTP traffic may skip the proxy."
+        )
     user_drift = bool(user_env is not None and user_env.no_proxy != env.no_proxy)
     if user_drift:
         tips.append(_USER_DRIFT_TIP)

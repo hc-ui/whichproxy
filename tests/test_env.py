@@ -90,3 +90,12 @@ def test_doctor_report_flags_user_drift() -> None:
     assert report["user_drift"] is True
     assert "openai.com" in report["user_dangerous"]
     assert report["suggest"]["no_proxy"] == SAFE_NO_PROXY
+
+
+def test_doctor_warns_when_only_http_proxy_set() -> None:
+    from whichproxy.doctor import doctor_report
+
+    env = read_env({"HTTP_PROXY": PROXY_URL, "NO_PROXY": "localhost"})
+    report = doctor_report(env, user_env=env)
+    joined = " ".join(report["tips"])
+    assert "HTTPS_PROXY is empty" in joined
