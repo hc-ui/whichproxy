@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 — 2026-08-18
+
+- `whichproxy ports` 扫描本机常见代理口（Clash / CC Switch / v2rayN）
+- 当前代理没在听时，诊所会列出本机**正在听**的端口，并建议改用那个地址
+- `doctor --copy` 把本窗口修复命令复制到剪贴板
+- `suggest -o fix.ps1` 写出可点源的脚本，不改当前环境
+
 ## 0.3.1 — 2026-08-17
 
 - 诊所标出 DISAGREE / 直连的主机

@@ -100,6 +100,36 @@ def test_suggest_prints_safe_noproxy(
     assert "不会改" in text
 
 
+def test_suggest_writes_script(tmp_path: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_clash_env(monkeypatch, no_proxy="localhost")
+    out = tmp_path / "fix.ps1"
+    code = main(["suggest", "-o", str(out)])
+    assert code == 0
+    text = out.read_text(encoding="utf-8")
+    assert "NO_PROXY" in text
+    assert "HTTPS_PROXY" in text
+
+
+def test_ports_json(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    from whichproxy import cli as cli_mod
+
+    def fake_scan(**kwargs):
+        del kwargs
+        return [
+            {"port": 7897, "label": "Clash mixed-port", "ok": True, "error": ""},
+            {"port": 15721, "label": "CC Switch", "ok": False, "error": "refused"},
+        ]
+
+    monkeypatch.setattr(cli_mod, "scan_loopback_ports", fake_scan)
+    code = main(["ports", "--json"])
+    data = _load_json(_combined(capsys))
+    assert code == 0
+    assert data["ports"][0]["port"] == 7897
+
+
 def test_clinic_alias_prints_chinese_diagnosis(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],

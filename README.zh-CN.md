@@ -31,6 +31,13 @@ pip install git+https://github.com/hc-ui/whichproxy.git
 
 装好后在当前终端跑 `whichproxy doctor`（或 `whichproxy clinic`）。输出中文诊断和可复制的修复命令，**不会改环境变量**。
 
+```text
+whichproxy doctor --copy
+whichproxy ports
+whichproxy suggest -o fix.ps1
+. .\fix.ps1
+```
+
 ## 20 秒上手
 
 错误的 `NO_PROXY`（Windows + Clash 上最常见的坑）：

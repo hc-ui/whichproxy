@@ -131,13 +131,25 @@ def read_win_user_environ() -> dict[str, str] | None:
     return values
 
 
-def suggest_fix(env: ProxyEnv) -> dict[str, object]:
+def suggest_fix(
+    env: ProxyEnv,
+    *,
+    listening: list[dict] | None = None,
+    current_ok: bool | None = None,
+) -> dict[str, object]:
+    from .probe import first_live_proxy_url
+
     dangerous = dangerous_no_proxy_hits(env.no_proxy)
     proxy = env.effective_https
-    proxy_url = redact_proxy(proxy) or "http://127.0.0.1:7897"
+    recommended = redact_proxy(proxy)
+    if listening and (not recommended or current_ok is False):
+        live = first_live_proxy_url(listening)
+        if live:
+            recommended = live
+    proxy_url = recommended or "http://127.0.0.1:7897"
     return {
         "no_proxy": SAFE_NO_PROXY,
-        "https_proxy": redact_proxy(proxy),
+        "https_proxy": recommended,
         "remove": dangerous,
         "powershell": f'$env:NO_PROXY = "{SAFE_NO_PROXY}"',
         "powershell_proxy": (
@@ -153,6 +165,12 @@ def suggest_fix(env: ProxyEnv) -> dict[str, object]:
         "user_powershell": (
             '[Environment]::SetEnvironmentVariable('
             f'"NO_PROXY","{SAFE_NO_PROXY}","User")'
+        ),
+        "script_ps1": (
+            f'$env:HTTP_PROXY = "{proxy_url}"\n'
+            f'$env:HTTPS_PROXY = "{proxy_url}"\n'
+            f'$env:ALL_PROXY = "{proxy_url}"\n'
+            f'$env:NO_PROXY = "{SAFE_NO_PROXY}"\n'
         ),
     }
 

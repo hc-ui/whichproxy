@@ -115,7 +115,7 @@ def clinic_findings(report: dict) -> list[dict]:
                 "error",
                 f"本机代理 {proxy.get('target')} 没有在听",
                 "环境变量对了也没用。先开 Clash，确认 mixed-port 和这个地址一致。",
-                extra=str(proxy.get("error") or ""),
+                extra=_port_extra(report, proxy),
             )
         )
     if not findings:
@@ -153,6 +153,15 @@ def render_clinic(report: dict) -> str:
     lines.append("本工具只诊断、只打印命令，不会改任何环境变量。")
     lines.append("改用户级变量后，关掉旧终端再开新窗口。")
     return "\n".join(lines) + "\n"
+
+
+def _port_extra(report: dict, proxy: dict) -> str:
+    bits = [str(proxy.get("error") or "").strip()]
+    live = [row for row in (report.get("ports") or []) if row.get("ok")]
+    if live:
+        labels = "、".join(f"{row['port']}（{row['label']}）" for row in live)
+        bits.append(f"本机正在听：{labels}")
+    return "；".join(item for item in bits if item)
 
 
 def _level_zh(level: str) -> str:

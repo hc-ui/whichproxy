@@ -9,7 +9,7 @@ from .env import (
     suggest_fix,
 )
 from .clinic import clinic_findings
-from .probe import probe_local_proxy
+from .probe import probe_local_proxy, scan_loopback_ports
 from .match import ModelResult, consensus, evaluate
 
 PRESETS = [
@@ -41,11 +41,14 @@ def doctor_report(
     *,
     user_env: ProxyEnv | None = None,
     probe=None,
+    scan=None,
 ) -> dict:
     if user_env is None:
         user_env = read_user_env()
     if probe is None:
         probe = probe_local_proxy
+    if scan is None:
+        scan = scan_loopback_ports
     dangerous = dangerous_no_proxy_hits(env.no_proxy)
     user_dangerous = (
         dangerous_no_proxy_hits(user_env.no_proxy) if user_env is not None else []
@@ -71,11 +74,18 @@ def doctor_report(
         tips.append(_USER_DRIFT_TIP)
     tips.append(f"Keep NO_PROXY local only: {SAFE_NO_PROXY}")
     reach = probe(env.effective_https)
+    ports = scan()
+    live = [row for row in ports if row.get("ok")]
     if reach.get("checked") and reach.get("ok") is False:
         tips.append(
             f"Proxy {reach.get('target')} is not accepting connections. "
             "Is Clash (or your mixed-port) running?"
         )
+        if live:
+            labels = ", ".join(
+                f"{row['port']} ({row['label']})" for row in live
+            )
+            tips.append(f"本机正在听：{labels}")
     payload = {
         "env": {
             "http_proxy": redact_proxy(env.http_proxy),
@@ -97,8 +107,13 @@ def doctor_report(
         "dangerous": dangerous,
         "user_dangerous": user_dangerous,
         "hosts": hosts,
-        "suggest": suggest_fix(env),
+        "suggest": suggest_fix(
+            env,
+            listening=ports,
+            current_ok=reach.get("ok") if reach.get("checked") else None,
+        ),
         "proxy": reach,
+        "ports": ports,
         "tips": tips,
     }
     payload["findings"] = clinic_findings(payload)

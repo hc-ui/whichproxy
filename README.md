@@ -31,6 +31,13 @@ pip install git+https://github.com/hc-ui/whichproxy.git
 
 Then run `whichproxy doctor` (or `clinic`). It prints a Chinese diagnosis plus copy-pasteable fix commands. It does not write environment variables.
 
+```text
+whichproxy doctor --copy     # 诊断并复制本窗口修复命令
+whichproxy ports             # 看 7897 / 15721 谁在听
+whichproxy suggest -o fix.ps1
+. .\fix.ps1                  # 只改当前窗口
+```
+
 ## 20 seconds
 
 Bad `NO_PROXY` (the usual Windows + Clash footgun):

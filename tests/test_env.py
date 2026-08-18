@@ -76,6 +76,17 @@ def test_suggest_fix_does_not_write_and_keeps_local_only() -> None:
     assert "ALL_PROXY" in str(payload["powershell_proxy"])
 
 
+def test_suggest_fix_prefers_listening_port_when_current_down() -> None:
+    env = read_env({"HTTPS_PROXY": "http://127.0.0.1:7897", "NO_PROXY": "localhost"})
+    listening = [
+        {"port": 7897, "label": "Clash", "ok": False, "error": "refused"},
+        {"port": 15721, "label": "CC Switch", "ok": True, "error": ""},
+    ]
+    payload = suggest_fix(env, listening=listening, current_ok=False)
+    assert payload["https_proxy"] == "http://127.0.0.1:15721"
+    assert "15721" in str(payload["script_ps1"])
+
+
 def test_read_user_env_accepts_injected_mapping() -> None:
     env = read_user_env({"NO_PROXY": "openai.com", "HTTPS_PROXY": PROXY_URL})
     assert env is not None
