@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "whichproxy"
-version = "0.4.0"
+version = "0.4.1"
 description = "See whether a host uses your proxy or slips through NO_PROXY — built for AI CLIs on Clash."
 readme = "README.md"
 license = { text = "MIT" }
@@ -21,7 +21,15 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501"]
 
 [project.scripts]
 whichproxy = "whichproxy.cli:main"
