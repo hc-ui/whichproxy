@@ -59,3 +59,25 @@ def test_evaluate_applies_normalize_host() -> None:
     results = {item.model: item for item in evaluate("https://api.openai.com:443", _env(".openai.com"))}
     assert results["curl"].route == "DIRECT"
     assert results["go"].route == "DIRECT"
+
+
+def test_curl_star_local_wildcard_matches_mdns_host() -> None:
+    inside = _by_model("printer.local", "*.local")
+    apex = _by_model("local", "*.local")
+    assert inside["curl"].route == "DIRECT"
+    assert "wildcard" in inside["curl"].reason
+    assert apex["curl"].route == "PROXY"
+    # Go has no ``*.suffix`` wildcard; only a bare ``*`` token.
+    assert inside["go"].route == "PROXY"
+
+
+def test_curl_and_go_match_bracketed_ipv6_loopback() -> None:
+    results = _by_model("::1", "[::1]")
+    assert results["curl"].route == "DIRECT"
+    assert results["go"].route == "DIRECT"
+
+
+def test_curl_and_go_strip_port_from_noproxy_token() -> None:
+    results = _by_model("127.0.0.1", "127.0.0.1:8080")
+    assert results["curl"].route == "DIRECT"
+    assert results["go"].route == "DIRECT"
