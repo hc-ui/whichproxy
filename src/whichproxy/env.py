@@ -86,6 +86,8 @@ def redact_proxy(url: str) -> str:
     if not parts.username and not parts.password:
         return url
     host = parts.hostname or ""
+    if ":" in host:
+        host = f"[{host}]"
     if parts.port:
         host = f"{host}:{parts.port}"
     user = parts.username or ""
