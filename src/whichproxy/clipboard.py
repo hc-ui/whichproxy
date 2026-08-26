@@ -26,7 +26,12 @@ def copy_text(text: str) -> None:
             err = (completed.stderr or "Set-Clipboard failed").strip()
             raise OSError(err)
         return
-    for command in (["pbcopy"], ["xclip", "-selection", "clipboard"]):
+    for command in (
+        ["pbcopy"],
+        ["wl-copy"],
+        ["xclip", "-selection", "clipboard"],
+        ["xsel", "--clipboard", "--input"],
+    ):
         try:
             completed = subprocess.run(
                 command,
