@@ -43,6 +43,13 @@ def test_redact_proxy_leaves_plain_url() -> None:
     assert redact_proxy(PROXY_URL) == PROXY_URL
 
 
+def test_redact_proxy_ipv6_keeps_brackets() -> None:
+    raw = "http://user:s3cretPASS@[::1]:7897"
+    hidden = redact_proxy(raw)
+    assert hidden == "http://user:***@[::1]:7897"
+    assert "s3cretPASS" not in hidden
+
+
 def test_dangerous_no_proxy_hits_finds_openai() -> None:
     hits = dangerous_no_proxy_hits("localhost,openai.com,127.0.0.1")
     assert "openai.com" in hits
