@@ -7,5 +7,6 @@ dist/
 build/
 *.egg-info/
 .coverage
+.ruff_cache/
 .DS_Store
 Thumbs.db
