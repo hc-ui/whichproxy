@@ -48,6 +48,14 @@ def test_curl_cidr_matches_like_modern_curl() -> None:
     assert outside["curl"].route == "PROXY"
 
 
+def test_curl_ipv6_cidr_matches_like_modern_curl() -> None:
+    inside = _by_model("[fd00::1]", "fd00::/8")
+    outside = _by_model("[2001:db8::1]", "fd00::/8")
+    assert inside["curl"].route == "DIRECT"
+    assert "CIDR" in inside["curl"].reason
+    assert outside["curl"].route == "PROXY"
+
+
 def test_star_matches_all_curl_and_go_direct() -> None:
     results = _by_model("api.openai.com", "*")
     assert results["curl"].route == "DIRECT"
