@@ -40,6 +40,14 @@ def test_go_bare_openai_matches_apex_and_subdomain() -> None:
     assert sub["go"].route == "DIRECT"
 
 
+def test_curl_cidr_matches_like_modern_curl() -> None:
+    inside = _by_model("10.0.0.8", "10.0.0.0/8")
+    outside = _by_model("11.1.1.1", "10.0.0.0/8")
+    assert inside["curl"].route == "DIRECT"
+    assert "CIDR" in inside["curl"].reason
+    assert outside["curl"].route == "PROXY"
+
+
 def test_star_matches_all_curl_and_go_direct() -> None:
     results = _by_model("api.openai.com", "*")
     assert results["curl"].route == "DIRECT"
