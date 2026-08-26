@@ -108,6 +108,19 @@ def test_suggest_writes_script(tmp_path: Any, monkeypatch: pytest.MonkeyPatch) -
     text = out.read_text(encoding="utf-8")
     assert "NO_PROXY" in text
     assert "HTTPS_PROXY" in text
+    assert "$env:" in text
+    assert "export " not in text
+
+
+def test_suggest_writes_shell_script(tmp_path: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_clash_env(monkeypatch, no_proxy="localhost")
+    out = tmp_path / "fix.sh"
+    code = main(["suggest", "-o", str(out)])
+    assert code == 0
+    text = out.read_text(encoding="utf-8")
+    assert "export HTTPS_PROXY=" in text
+    assert "export NO_PROXY=" in text
+    assert "$env:" not in text
 
 
 def test_ports_json(
