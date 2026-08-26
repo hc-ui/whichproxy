@@ -123,6 +123,15 @@ def test_suggest_writes_shell_script(tmp_path: Any, monkeypatch: pytest.MonkeyPa
     assert "$env:" not in text
 
 
+def test_suggest_creates_parent_dirs(tmp_path: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_clash_env(monkeypatch, no_proxy="localhost")
+    out = tmp_path / "nested" / "dir" / "fix.sh"
+    code = main(["suggest", "-o", str(out)])
+    assert code == 0
+    assert out.is_file()
+    assert "export HTTPS_PROXY=" in out.read_text(encoding="utf-8")
+
+
 def test_ports_json(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],

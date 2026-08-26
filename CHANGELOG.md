@@ -3,6 +3,7 @@
 ## 0.4.1 — 2026-08-26
 
 - `suggest -o fix.sh` writes a bash script instead of PowerShell
+- `suggest -o nested/fix.sh` creates missing parent directories
 - Clipboard copy also tries `wl-copy` / `xsel`
 - CI now runs ruff
 

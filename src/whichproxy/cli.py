@@ -124,6 +124,7 @@ def _cmd_suggest(
             path_text = str(payload.get("script_sh") or "")
         else:
             path_text = str(payload.get("script_ps1") or "")
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(path_text, encoding="utf-8", newline="\n")
         print(f"wrote {path}")
         if suffix == ".ps1":
