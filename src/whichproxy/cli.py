@@ -116,13 +116,21 @@ def _cmd_suggest(
     report = doctor_report(env)
     payload = report.get("suggest") or suggest_fix(env)
     if out:
-        path_text = str(payload.get("script_ps1") or "")
         from pathlib import Path
 
         path = Path(out).expanduser()
+        suffix = path.suffix.lower()
+        if suffix in {".sh", ".bash"}:
+            path_text = str(payload.get("script_sh") or "")
+        else:
+            path_text = str(payload.get("script_ps1") or "")
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(path_text, encoding="utf-8", newline="\n")
         print(f"wrote {path}")
-        print("本窗口执行：. .\\" + path.name if path.suffix.lower() == ".ps1" else f"source {path}")
+        if suffix == ".ps1":
+            print("本窗口执行：. .\\" + path.name)
+        else:
+            print(f"source {path}")
         return 0
     if json_mode:
         _print_json(payload)

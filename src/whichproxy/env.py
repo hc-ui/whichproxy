@@ -172,6 +172,12 @@ def suggest_fix(
             f'$env:ALL_PROXY = "{proxy_url}"\n'
             f'$env:NO_PROXY = "{SAFE_NO_PROXY}"\n'
         ),
+        "script_sh": (
+            f"export HTTP_PROXY={proxy_url}\n"
+            f"export HTTPS_PROXY={proxy_url}\n"
+            f"export ALL_PROXY={proxy_url}\n"
+            f"export NO_PROXY={SAFE_NO_PROXY}\n"
+        ),
     }
 
 

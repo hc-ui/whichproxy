@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1 — 2026-08-26
+
+- `suggest -o fix.sh` writes a bash script instead of PowerShell
+- `suggest -o nested/fix.sh` creates missing parent directories
+- Clipboard copy also tries `wl-copy` / `xsel`
+- CI now runs ruff
+
 ## 0.4.0 — 2026-08-18
 
 - `whichproxy ports` 扫描本机常见代理口（Clash / CC Switch / v2rayN）

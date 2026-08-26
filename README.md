@@ -36,6 +36,8 @@ whichproxy doctor --copy     # 诊断并复制本窗口修复命令
 whichproxy ports             # 看 7897 / 15721 谁在听
 whichproxy suggest -o fix.ps1
 . .\fix.ps1                  # 只改当前窗口
+whichproxy suggest -o fix.sh
+source ./fix.sh              # POSIX 当前窗口
 ```
 
 ## 20 seconds
