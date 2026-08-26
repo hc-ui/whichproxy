@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .env import SAFE_NO_PROXY, suggest_fix
+from .env import SAFE_NO_PROXY
 
 
 def clinic_findings(report: dict) -> list[dict]:
