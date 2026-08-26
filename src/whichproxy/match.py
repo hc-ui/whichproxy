@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 import ipaddress
 from dataclasses import dataclass
 from urllib.parse import urlsplit
@@ -66,6 +67,32 @@ def _curl(host: str, tokens: list[str], proxy: str) -> ModelResult:
     return ModelResult("curl", route, detail)
 
 
+def normalize_no_proxy_token(raw: str) -> str:
+    """Strip ``[IPv6]`` brackets and a trailing ``:port`` from a NO_PROXY token.
+
+    ``[::1]`` and ``127.0.0.1:8080`` appear in real env files; matching must
+    use the host (or CIDR) curl/Go actually compare against.
+    """
+    text = (raw or "").strip()
+    if text.startswith("[") and "]" in text:
+        inner = text[1 : text.index("]")]
+        rest = text[text.index("]") + 1 :]
+        if rest.startswith("/") or not rest:
+            return inner + rest
+        if rest.startswith(":") and rest[1:].split("/", 1)[0].isdigit():
+            suffix = rest.split(":", 1)[1]
+            slash = suffix.find("/")
+            return inner if slash < 0 else inner + suffix[slash:]
+        return inner
+    if "/" in text:
+        return text
+    if text.count(":") == 1 and not text.startswith(":"):
+        host, port = text.rsplit(":", 1)
+        if port.isdigit():
+            return host
+    return text
+
+
 def _curl_match(host: str, tokens: list[str]) -> str | None:
     for token in tokens:
         raw = token.strip()
@@ -73,12 +100,18 @@ def _curl_match(host: str, tokens: list[str]) -> str | None:
             continue
         if raw == "*":
             return "matched *"
+        # macOS / many tools ship ``*.local``; modern curl treats ``*`` as a wildcard.
+        if "*" in raw:
+            pattern = raw.lower().rstrip(".")
+            if fnmatch.fnmatch(host, pattern):
+                return f"wildcard {raw}"
+            continue
         if raw.startswith("."):
             suffix = raw.lower().lstrip(".")
             if host.endswith("." + suffix):
                 return f"subdomain of {raw}"
             continue
-        lowered = raw.lower().rstrip(".")
+        lowered = normalize_no_proxy_token(raw).lower().rstrip(".")
         if host == lowered:
             return f"exact {raw}"
     return None
@@ -110,14 +143,14 @@ def _go_match(host: str, tokens: list[str]) -> str | None:
             return "matched *"
         if "/" in raw:
             try:
-                network = ipaddress.ip_network(raw, strict=False)
+                network = ipaddress.ip_network(normalize_no_proxy_token(raw), strict=False)
                 addr = ipaddress.ip_address(host)
             except ValueError:
                 continue
             if addr in network:
                 return f"CIDR {raw}"
             continue
-        lowered = raw.lower()
+        lowered = normalize_no_proxy_token(raw).lower()
         if lowered.startswith("."):
             suffix = lowered.lstrip(".")
             if host.endswith("." + suffix):
