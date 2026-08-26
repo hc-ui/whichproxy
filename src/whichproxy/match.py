@@ -106,6 +106,15 @@ def _curl_match(host: str, tokens: list[str]) -> str | None:
             if fnmatch.fnmatch(host, pattern):
                 return f"wildcard {raw}"
             continue
+        if "/" in raw:
+            try:
+                network = ipaddress.ip_network(raw, strict=False)
+                addr = ipaddress.ip_address(host)
+            except ValueError:
+                continue
+            if addr in network:
+                return f"CIDR {raw}"
+            continue
         if raw.startswith("."):
             suffix = raw.lower().lstrip(".")
             if host.endswith("." + suffix):
